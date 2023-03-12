@@ -137,12 +137,6 @@ class Reminder(commands.Cog):
                 embeds.append(embed)
             session = EmbedPaginatorSession(ctx, *embeds)
             await session.run()
-                
-            
-        
-        
-        
-            
             
     @tasks.loop(seconds=10)
     async def reminder_task(self):
