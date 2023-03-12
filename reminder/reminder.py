@@ -6,7 +6,6 @@ import os
 import discord
 from discord.ext import commands, tasks
 from discord import utils
-import pytz
 
 from core import checks
 from core.models import PermissionLevel
