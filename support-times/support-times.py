@@ -151,10 +151,10 @@ class SupportTimes(commands.Cog):
             Timezone: ``{configured_timezone}``   
             Log: ``{log_actions}``    
             ''',
-            color=discord.Color.blurple()
+            color=self.bot.main_color
         )
         schedules = self.format_schedules(enable_schedules, disable_schedules)
-        embed2 = discord.Embed(description=f'Modmail enable schedules:\n{schedules[0]}\n\nModmail disable schedules:\n{schedules[1]}', color=discord.Color.blurple())
+        embed2 = discord.Embed(description=f'Modmail enable schedules:\n{schedules[0]}\n\nModmail disable schedules:\n{schedules[1]}', color=self.bot.main_color)
 
         await ctx.send(embeds=[embed, embed2])
 
@@ -185,15 +185,15 @@ class SupportTimes(commands.Cog):
             return await ctx.send_help(ctx.command)
         mode_str = mode.lower()
         if not mode_str in ['disable', 'enable']:
-            embed = discord.Embed(description=f'The Mode needs to be ``disable`` or ``enable``.', color=discord.Color.red())
+            embed = discord.Embed(description=f'The Mode needs to be ``disable`` or ``enable``.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         valid_cron = croniter.croniter.is_valid(cron)
         if not valid_cron:
-            embed = discord.Embed(description=f'The cron job you provided, is invalid.', color=discord.Color.red())
+            embed = discord.Embed(description=f'The cron job you provided, is invalid.', color=self.bot.error_color)
             view = discord.ui.View().add_item(discord.ui.Button(style=discord.ButtonStyle.link, label='Cronjob Examples', url='https://crontab.guru/examples.html'))
             return await ctx.send(embed=embed, view=view)
         if cron in enable_schedules or cron in disable_schedules:
-            embed = discord.Embed(description=f'You already have this cronjob added to either enabling or disabling schedules.', color=discord.Color.red())
+            embed = discord.Embed(description=f'You already have this cronjob added to either enabling or disabling schedules.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         if mode_str == "disable":
             self.config['disable_schedules'].append(cron)
@@ -222,7 +222,7 @@ class SupportTimes(commands.Cog):
         if cron is None:
             return await ctx.send_help(ctx.command)
         if not cron in enable_schedules and not cron in disable_schedules:
-            embed = discord.Embed(description=f'The cron job does not exist.', color=discord.Color.red())
+            embed = discord.Embed(description=f'The cron job does not exist.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         
         if cron in enable_schedules:
@@ -255,7 +255,7 @@ class SupportTimes(commands.Cog):
             return await ctx.send_help(ctx.command)
         mode_input = mode.lower()
         if not mode_input in ['new', 'all']:
-            embed = discord.Embed(description='Invalid mode. It needs to be either ``new`` or ``all``.', color=discord.Color.red())
+            embed = discord.Embed(description='Invalid mode. It needs to be either ``new`` or ``all``.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         new_mode = DMDisabled.NEW_THREADS if mode_input == "new" else DMDisabled.ALL_THREADS
         self.config['mode'] = new_mode
@@ -299,7 +299,7 @@ class SupportTimes(commands.Cog):
         try:
             pytz_timezone = pytz.timezone(timezone_input)
         except pytz.exceptions.UnknownTimeZoneError:
-            embed = discord.Embed(description='The timezone you provided is invalid.', color=discord.Color.red())
+            embed = discord.Embed(description='The timezone you provided is invalid.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         self.config['timezone'] = str(pytz_timezone)
         await self.update_config()
@@ -344,7 +344,7 @@ class SupportTimes(commands.Cog):
             if self.bot.config["log_channel_id"] is not None:
                 log_channel = self.bot.get_channel(int(self.bot.config["log_channel_id"]))
                 if log_channel:
-                    embed = discord.Embed(title='Modmail is now enabled!', description=f'Modmail has been automatically enabled.', timestamp=discord.utils.utcnow(), color=discord.Color.green())
+                    embed = discord.Embed(title='Modmail is now enabled!', description=f'Modmail has been automatically enabled.', timestamp=discord.utils.utcnow(), color=self.bot.main_color)
                     embed.set_footer(text='Support-Times Plugin')
                     await log_channel.send(embed=embed)
 
@@ -358,7 +358,7 @@ class SupportTimes(commands.Cog):
             if self.bot.config["log_channel_id"] is not None:
                 log_channel = self.bot.get_channel(int(self.bot.config["log_channel_id"]))
                 if log_channel:
-                    embed = discord.Embed(title='Modmail is now disabled!', description=f'Modmail has been automatically disabled.', timestamp=discord.utils.utcnow(), color=discord.Color.red())
+                    embed = discord.Embed(title='Modmail is now disabled!', description=f'Modmail has been automatically disabled.', timestamp=discord.utils.utcnow(), color=self.bot.error_color)
                     embed.set_footer(text='Support-Times Plugin')
                     await log_channel.send(embed=embed)
 
