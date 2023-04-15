@@ -156,7 +156,7 @@ class Reminder(commands.Cog):
                     await self.update_config()
                     if v["channel_id"] == None:
                         try:
-                            user = await self.bot.fetch_user(int(user_id))
+                            user = await self.bot.get_or_fetch_user(int(user_id))
                             if user:
                                 embed = discord.Embed(title=f'Reminder', description=f'{reminder_text}', color=self.bot.main_color)
                                 await user.send(embed=embed)
