@@ -127,7 +127,7 @@ class Sticky(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if isinstance(message.channel, discord.DMChannel) or message.author.bot or message.content.startswith(self.bot.prefix) or not message.guild.id == int(os.environ.get('GUILD_ID', 1)):
+        if isinstance(message.channel, discord.DMChannel) or message.author.bot or message.content.startswith(self.bot.prefix) or not:
             return
         await self.bot.wait_until_ready()
         channel_id = message.channel.id
