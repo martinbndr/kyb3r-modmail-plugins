@@ -24,9 +24,9 @@ class Sticky(commands.Cog):
         self.db = self.bot.plugin_db.get_partition(self)
         self.config = None
         self.default_config = {}
-        self.default_sticky_settings = {}
+        self.default_channel_config = {"message": "Sticky message", "stopped": False, "color": str(discord.Color.blurple().value)}
         self.sticked_messages = {}
-        self.delay = 3
+        self.delay = 5
         self.locked_channels = set()
 
     async def cog_load(self):
@@ -41,7 +41,25 @@ class Sticky(commands.Cog):
         if missing:
             for key in missing:
                 self.config[key] = self.default_config[key]
+        channel_ids = []
+        for k, v in self.config.items():
+            channel_ids = []
+            if not k == "_id":
+                channel_ids.append(k)
+        if channel_ids:
+            for c in channel_ids:
+                missing_default_channel_keys = []
+                channel_config = self.config[c]
+                for default_channel_conf_key in self.default_channel_config.keys():
+                    if default_channel_conf_key not in channel_config:
+                        missing_default_channel_keys.append(default_channel_conf_key)
+                if missing_default_channel_keys:
+                    for missing_key in missing_default_channel_keys:
+                        channel_config[missing_key] = self.default_channel_config[missing_key]
+                self.config[c] = channel_config
         await self.update_config()
+
+
 
     async def update_config(self):
         await self.db.find_one_and_update(
@@ -49,6 +67,7 @@ class Sticky(commands.Cog):
             {"$set": self.config},
             upsert=True,
         )
+
 
     @checks.has_permissions(PermissionLevel.ADMINISTRATOR)
     @commands.command(name='stick')
@@ -67,8 +86,9 @@ class Sticky(commands.Cog):
         sticky_channel_data = {}
         sticky_channel_data['message'] = str(message)
         sticky_channel_data['stopped'] = False
+        sticky_channel_data['color'] = str(discord.Color.blurple().value)
 
-        embed = discord.Embed(description=sticky_channel_data['message'], color=self.bot.main_color)
+        embed = discord.Embed(description=sticky_channel_data['message'], color=discord.Color.blurple())
         msg = await channel.send(embed=embed)
 
         sticky_channel_data['last_message_id'] = str(msg.id)
@@ -85,14 +105,16 @@ class Sticky(commands.Cog):
         """
         Removes a sticky message from a channel.
         """
-        if not self.config.get(str(channel.id), None):
+        current_channel_settings = self.config.get(str(channel.id), None)
+        if not current_channel_settings:
             embed = discord.Embed(description=f'This channel has no sticky message enabled.', color=self.bot.error_color)
             return await ctx.send(embed=embed)
         self.config.pop(str(channel.id), None)
-        await self.update_config()
         self.sticked_messages.pop(str(channel.id), None)
-        with suppress(KeyError):
-            self.locked_channels.remove(channel.id)
+        await self.db.find_one_and_update(
+            {"_id": "sticky"},
+            {"$unset": {str(channel.id):current_channel_settings}}
+        )
         logger.info('Sticky Message removed from %s (%s) by %s', channel.name, channel.id, ctx.author)
         embed = discord.Embed(description=f'Sticky message removed from {channel}.', color=discord.Color.green())
         await ctx.send(embed=embed)
@@ -125,6 +147,20 @@ class Sticky(commands.Cog):
         embed = discord.Embed(description=f'Sticky message started in {channel}.', color=discord.Color.green())
         await ctx.send(embed=embed)
 
+    @checks.has_permissions(PermissionLevel.ADMINISTRATOR)
+    @commands.command(name='stickcolor')
+    async def stickcolor(self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.VoiceChannel, discord.Thread], *, color: discord.Color):
+        """
+        Changes the embed color of the sticky embed.
+        """
+        if not self.config.get(str(channel.id), None):
+            embed = discord.Embed(description=f'This channel has no sticky message enabled.', color=self.bot.error_color)
+            return await ctx.send(embed=embed)
+        self.config[str(channel.id)]['color'] = str(color.value)
+        await self.update_config()
+        embed = discord.Embed(description=f'Sticky message embed color changed in {channel.mention}.', color=discord.Color.green())
+        await ctx.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.DMChannel) or message.author.bot or message.content.startswith(self.bot.prefix):
@@ -149,7 +185,7 @@ class Sticky(commands.Cog):
                 await last_sticked_msg.delete()
 
         
-        embed = discord.Embed(description=channel_conf['message'], color=self.bot.main_color)
+        embed = discord.Embed(description=channel_conf['message'], color=discord.Color(int(channel_conf['color'])))
         new_msg = await message.channel.send(embed=embed)
         self.config[str(channel_id)]['last_message_id'] = str(new_msg.id)
         await self.update_config()
@@ -170,7 +206,7 @@ class Sticky(commands.Cog):
                 self.locked_channels.add(payload.channel_id)
                 channel = self.bot.get_channel(payload.channel_id)
                 await asyncio.sleep(self.delay)
-                embed = discord.Embed(description=channel_conf['message'], color=self.bot.main_color)
+                embed = discord.Embed(description=channel_conf['message'], color=discord.Color(int(channel_conf['color'])))
                 new_msg = await channel.send(embed=embed)
                 self.config[str(payload.channel_id)]['last_message_id'] = str(new_msg.id)
                 await self.update_config()
