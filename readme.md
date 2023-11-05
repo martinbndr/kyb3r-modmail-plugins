@@ -2,7 +2,7 @@
 Some useful plugins for the modmail bot.
 
 ## Current stable plugins
-reminder
+reminder, auto_delete_commands
 
 ## Plugins in development/beta
-sticky, support-times
+sticky, support-times, autoreact
