@@ -17,6 +17,8 @@ logger = getLogger(__name__)
 class Autoreact(commands.Cog):
     """
     Automatically reacts with emojis in certain channels.
+
+    You can use this feature in multiple channels with max 20 reactions, but keep in mind of discord ratelimits.\nThe bot could get limited/blocked for spam, specially if these channels are very active.
     """
     def __init__(self, bot):
         self.bot = bot
@@ -72,7 +74,6 @@ class Autoreact(commands.Cog):
         await self.update_config()
         react_str = ', '.join(emojis_to_react)
         embed = discord.Embed(title='Channel activated', description=f'The bot will autoreact in this channel with the following emojis:\n{react_str}', color=discord.Color.green())
-        embed.add_field(name='Info', value='You can use this feature in multiple channels with max 20 reactions, but keep in mind of discord ratelimits.\nThe bot could get limited/blocked for spam, specially if these channels are very active.')
         return await ctx.send(embed=embed)
     
     @commands.command(name='stopreact')
