@@ -16,9 +16,9 @@ logger = getLogger(__name__)
 
 class Autoreact(commands.Cog):
     """
-    Automatically reacts with emojis in certain channels.
+Automatically reacts with emojis in certain channels.
 
-    You can use this feature in multiple channels with max 20 reactions, but keep in mind of discord ratelimits.\nThe bot could get limited/blocked for spam, specially if these channels are very active.
+You can use this feature in multiple channels with max 20 reactions, but keep in mind of discord ratelimits.\nThe bot could get limited/blocked for spam, specially if these channels are very active.
     """
     def __init__(self, bot):
         self.bot = bot
