@@ -174,8 +174,8 @@ class SupportTimes(commands.Cog):
         Examples:
         ``{prefix}support-times scheduleadd disable 0 22 * * *`` (disables every day at 10pm)
         ``{prefix}support-times scheduleadd enable 0 8 * * *`` (enables every day at 8am)
-        ``{prefix}support-times scheduleadd disable 0 23 * * *`` (disables from Monday-Friday at 11pm)
-        ``{prefix}support-times scheduleadd enable 0 9 * * *`` (enables from Monday-Friday at 9am)
+        ``{prefix}support-times scheduleadd disable 0 23 * * 1-5`` (disables from Monday-Friday at 11pm)
+        ``{prefix}support-times scheduleadd enable 0 9 * * 1-5`` (enables from Monday-Friday at 9am)
 
         [Cronjob Examples](https://crontab.guru/examples.html)
         """
