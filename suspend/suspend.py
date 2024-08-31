@@ -82,6 +82,7 @@ class Suspend(commands.Cog):
             description=f'This thread has been suspended by {ctx.author.mention}.',
             color=self.bot.error_color
         )
+        embed.set_footer(text='This cannot be undone.')
         await ctx.send(embed=embed)
 
 
