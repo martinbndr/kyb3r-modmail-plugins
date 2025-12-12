@@ -9,8 +9,7 @@ class DiscussionThread(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_thread_ready(self, thread, creator, category, initial_message):
+    async def create_discussion_thread(self, thread):
         if isinstance(thread.channel, discord.TextChannel):
             perms = thread.channel.permissions_for(thread.channel.guild.me)
             if not perms.create_public_threads:
@@ -28,7 +27,15 @@ class DiscussionThread(commands.Cog):
             try:
                 discussion_thread = await thread.channel.create_thread(name="Discussion", auto_archive_duration=4320, message=msg)
             except Exception as e:
-                LOGGER.error("Failed to create discussion thread for %s.", thread.id, exc_info=True)
+                LOGGER.error(f"Failed to create discussion thread for {thread.id}.\n{e}", exc_info=True)
+
+    @commands.Cog.listener()
+    async def on_thread_ready(self, thread, creator, category, initial_message):
+        await self.create_discussion_thread(thread)
+
+    @commands.Cog.listener()
+    async def on_thread_unsnoozed(self, thread):
+        await self.create_discussion_thread(thread)
 
 
 
