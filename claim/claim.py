@@ -14,17 +14,33 @@ logger = getLogger(__name__)
 async def claim_check(ctx):
     cog = ctx.bot.get_cog("Claim")
     thread_data = await cog.db.find_one({"channel_id": str(ctx.thread.channel.id)})
+
     allowed_to_reply = False
+
     if thread_data is None:
         if cog.config["require_claim"] is False:
             allowed_to_reply = True
     else:
         if str(ctx.author.id) in thread_data["claimers"]:
             allowed_to_reply = True
+
     if ctx.author.bot:
         allowed_to_reply = True
-    return allowed_to_reply
 
+    if not allowed_to_reply:
+        if not hasattr(ctx, "_claim_warning_sent"):
+            ctx._claim_warning_sent = True
+
+            embed = discord.Embed(
+                title="Thread Not Claimed",
+                description="You need to claim this ticket to reply.\nUse `[p]claim` first.",
+                color=ctx.bot.error_color,
+            )
+            await ctx.send(embed=embed)
+
+        return False
+
+    return True
 
 class Claim(commands.Cog):
     """
